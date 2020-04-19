@@ -16,19 +16,27 @@ public:
 	Anzeige();
 	~Anzeige();
 	void Begin();
+	bool StarteMessung(unsigned long Zeit); 
 	void Zeichne_Anzeige();
 	void NextMenue(bool M);
 
-	void ZeigeSendedaten();
-	SendData BerechneNeueDaten(unsigned int diff_imp, unsigned long Zeitinterwall, int D_Spannung);
+	SendData BerechneNeueDaten(byte &Impuse, unsigned long Zeit_1, int D_Spannung);
 	void FuelleKurve(byte Power_Data, byte Speed_Data);
 
 protected:
-	const double HalberUmfang = 31 * M_PI_2; // U = Pi/2 *31   {U = Pi * d}
-
 	unsigned int Messimpulse;
 	unsigned int Streckegefahren; // in mm
-	double Messgeschwindigkeit; // in mm/sec
+	unsigned int Messgeschwindigkeit; // in mm/sec
+	byte NeueImpulse;
+	unsigned long NeuStrecke;
+
+	unsigned long alte_Zeit;
+	double Zeitinterwall; 
+
+	bool StartOnce;
+	bool StopOnce;
+	bool ERROR_IMP;
+	byte ER_ImP;
 
 	byte   Geschwindigkeit; // km/h
 	byte Max_Geschwindigkeit;  // max in km/h
@@ -43,13 +51,12 @@ protected:
 	unsigned int Menue;
 	bool update;
 	U8X8 Display;
-	byte KurvePower[129];
-	byte KurveSpeed[129];
+	//byte KurvePower[129];
+	//byte KurveSpeed[129];
 
 	char * Zeile(char* TA, double N, char* TC);
 	char * Zeile(char* TA, unsigned int N, char* TC);
 	char * Zeile(char* TA, byte N, char* TC);
-	char * ZeileV(char* TA, byte N, char* TC);
 private:
 };
 

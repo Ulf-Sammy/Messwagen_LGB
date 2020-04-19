@@ -22,7 +22,7 @@
 #define PIN_SDA		 A4  // Data I²C
 #define PIN_SCL		 A5  // Clock I²C
 // Funk-Modul
-#define FUNK_bps	5000
+#define FUNK_bps	1000
 #define FUNK_nr		4
 // Beschleinigungs-Modul
 #define MPU6050_ADRESS 0x68
@@ -30,13 +30,24 @@
 
 
 #define Taste_Pushed(A) digitalRead(A) == LOW
-#define TRACE(A,B) Serial.print(A); Serial.println(B);
+#define TRACE(A) Serial.println(A);
+#define TRACE2(A,B) Serial.print(A); Serial.println(B);
+#define TRACE3(A,B,C) Serial.print(A); Serial.print(B);Serial.println(C);
+
 
 struct SendData
 {
 	unsigned int Nr;
 	byte Po;
 	byte Sp;
+/*
+	SendData(unsigned int N,byte P, byte S)
+	{
+		Nr = N;
+		Po = P;
+		Sp = S;
+	}
+*/
 };
 struct B_Werte
 {

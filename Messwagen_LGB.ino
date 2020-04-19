@@ -11,15 +11,10 @@
 
 Hardware MessWagen;
 Anzeige Display;
-
 SendData SendeDaten;
-
-unsigned long Zeitinterwall; // die Zeit zwischen zwei Impulsen
-unsigned long Z1, Z2;
-unsigned long mZ1, mZ2;
-int Messimpulse; // von der Lichtschranke
-int alt_Messimpulse;
-int DiffImpulse;
+unsigned long Z1;
+//unsigned long mZ1, mZ2;
+byte Messimpulse; // von der Lichtschranke
 
 int D_Spannung;
 
@@ -32,11 +27,7 @@ void setup()
 	MessWagen.Begin();
 	Display.Begin();
 
-	Zeitinterwall = 0;
-	Messimpulse = -1;
-	alt_Messimpulse = -1;
-	Z1 = 0;
-	Z2 = 0;
+	Messimpulse = 0 ;
 	attachInterrupt(digitalPinToInterrupt(PIN_TAKTRAD), behandle_interupt, RISING);
 }
 
@@ -46,23 +37,18 @@ void loop()
 
 	Display.NextMenue(Taste_Pushed(PIN_TASTE_R));
 	Display.Zeichne_Anzeige();
-	DiffImpulse = Messimpulse - alt_Messimpulse;
-	if (DiffImpulse > 0)
+	if (Messimpulse > 0)
 	{
+
 		//mZ1 = millis();
-			if (MessWagen.StarteMessung(DiffImpulse))
+			if (Display.StarteMessung(Z1))
 			{
-				Z2 = Z1;
 				Messimpulse = 0;
-				alt_Messimpulse = 0;
 			}
 			else
 			{
-				SendeDaten = Display.BerechneNeueDaten(DiffImpulse, Z1 - Z2, D_Spannung);
+				SendeDaten = Display.BerechneNeueDaten(Messimpulse, Z1 , D_Spannung);
 				MessWagen.Sende_Werte(SendeDaten);
-				Display.ZeigeSendedaten();
-				alt_Messimpulse = Messimpulse;
-				Z2 = Z1;
 			}
 		//mZ2 = millis();
 		//Serial.println(mZ2 - mZ1);	

@@ -19,9 +19,6 @@ void Hardware::Begin()
 	pinMode(PIN_TASTE_R, INPUT);
 	digitalWrite(PIN_TASTE_R, HIGH);
 	pinMode(PIN_LED, OUTPUT);
-    StartOnce = true;
-	StopOnce = true;
-
 	//
 #ifdef FUNK-Modul
 	vw_set_tx_pin(PIN_FUNK);
@@ -39,17 +36,6 @@ void Hardware::Begin()
 #endif 
 }
 
-bool Hardware::StarteMessung(int Imp)
-{
-	if (StartOnce)
-	{
-		StartOnce = false;
- 		return true;
-	}
-	else
-		return false;
-}
-
 int Hardware::LeseSpannung()
 {
 	return analogRead(PIN_SPANNUNG);
@@ -58,8 +44,8 @@ int Hardware::LeseSpannung()
 void Hardware::Sende_Werte(SendData Data)
 {//                       
 	// I Index der Messungen
-	// Speed  Geschwindigkeit
 	// Power Sannung in Volt 200 = 20.0V
+	// Speed  Geschwindigkeit
 	// Zw Zeit...
 	Funk_Data[0] = highByte(Data.Nr);
 	Funk_Data[1] = lowByte(Data.Nr);
@@ -70,6 +56,8 @@ void Hardware::Sende_Werte(SendData Data)
 	vw_send((byte*)Funk_Data, sizeof(Funk_Data));
 	vw_wait_tx();
 #endif // FUNK-Modul
+	//TRACE2("Power = ", Data.Po)
+	//TRACE2("Speed = ", Data.Sp)
 }
 
 

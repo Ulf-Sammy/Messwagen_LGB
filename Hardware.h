@@ -14,7 +14,6 @@ public:
 	Hardware();
 	~Hardware();
 	void Begin();
-	bool StarteMessung(int Imp);
 	int LeseSpannung();
 
 	void Sende_Werte(SendData Data);
@@ -24,11 +23,9 @@ public:
 	Mess_Besch LeseBeschleunigungWerte();
 
 protected:
-	bool StartOnce;
-	bool StopOnce;
 	byte Funk_Data[FUNK_nr];
 	byte Besch_Data[MPU6050_DATA_L];
 	Mess_Besch Besch_Messung;
-
+	SendData SendeDaten;
 };
 

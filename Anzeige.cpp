@@ -3,18 +3,20 @@
 Anzeige::Anzeige()
 {
 	Display = U8X8_ST7565_ERC12864_4W_HW_SPI(PIN_CS, PIN_DC, PIN_RESET); ///* cs=*/ 10, /* dc=*/ 8, /* reset=*/ 9)
+	/*
 	for (int i = 0; i < 128; i++)
 	{
 		KurvePower[i] = 0;
 		KurveSpeed[i] = 0;
 	}
+	*/
 	Menue = (MenuAnzeige)0;
 	Max_Geschwindigkeit = 0;
 	Min_Geschwindigkeit = 1000;
 	update = true;
+	ERROR_IMP = false;
 	Geschwindigkeit = 200;
-	MessSpannung = 180;
-	Messimpulse = 0;
+	MessSpannung = 100;
 }
 
 Anzeige::~Anzeige()
@@ -25,7 +27,7 @@ void Anzeige::Begin()
 {
 	Display.begin();
 	Display.setContrast(21);
-
+	/*
 	Display.setFont(FONT_k);
 	Display.drawString(0, 0,"starte Messwagen!");
 	Display.drawString(0, 2,"   Version 1.0   ");
@@ -48,6 +50,21 @@ void Anzeige::Begin()
 	*/
 }
 
+bool Anzeige::StarteMessung(unsigned long Zeit)
+{
+	if (StartOnce)
+	{
+		StartOnce = false;
+		alte_Zeit = Zeit;
+		Streckegefahren = 0;
+		Messimpulse = 0;
+		ERROR_IMP = false;
+		return true;
+	}
+	else
+		return false;
+}
+
 void Anzeige::NextMenue(bool M)
 {
 	if (M)
@@ -61,25 +78,40 @@ void Anzeige::NextMenue(bool M)
 	}
 }
 
-void Anzeige::ZeigeSendedaten()
-{
-	update = true;
-}
 
-SendData Anzeige::BerechneNeueDaten(unsigned int diff_imp, unsigned long Zeitinterwall, int DSpannung)
+SendData Anzeige::BerechneNeueDaten(byte &Impulse, unsigned long Zeit,  int DSpannung)
 {
+	NeueImpulse = Impulse;
+	Impulse = 0;
+	NeuStrecke = 0;
+	double A;
+	double B;
+	TRACE("----------------------------------------------");
+	TRACE2(" Neue Spannung = ", DSpannung);
+	TRACE2(" Neue Impulse  = ", NeueImpulse);
+	TRACE2(" Neue Strecke  = ", NeuStrecke);
+
+	for (size_t i = 0; i < NeueImpulse; i++)
+	{
+		NeuStrecke = NeuStrecke + 49; 
+	}
+	Streckegefahren = Streckegefahren + NeuStrecke;
+	Messimpulse = Messimpulse + NeueImpulse;
+	Zeitinterwall = Zeit - alte_Zeit;
+	TRACE2(" Die Zeit  1   = ", Zeit);
+	TRACE2(" Die Zeit  2   = ", alte_Zeit);
+	TRACE2(" Die Zeit  S   = ", Zeitinterwall);
+
+	//Zeitinterwall = Zeitinterwall / 1000.0;
+
+	MessSpannung = map( DSpannung,0,1023,0,100);  //100% gleiche volle Power 1023;
+
+	A = 1000.0 * (double)NeuStrecke /  Zeitinterwall; // mm /sec
 	
-	SendData SendeDaten;
-	Messimpulse = Messimpulse + diff_imp;
-	SendeDaten.Nr = Messimpulse;
+	B = (A * 792.0 / 10000.0)+0.5; // +0.5;// Speed in km/h
 
-	MessSpannung = DSpannung * (200 / 255);
-	SendeDaten.Po = MessSpannung;
-
-	Streckegefahren = (HalberUmfang * Messimpulse + 0.5);
-	Messgeschwindigkeit = (HalberUmfang * diff_imp + 0.5) * 1000 / Zeitinterwall; // mm /sec
-	Geschwindigkeit = (Messgeschwindigkeit * 792 / 10000) + 0.5;// Speed in km/h
-	SendeDaten.Sp = Geschwindigkeit;
+	Messgeschwindigkeit = (unsigned int)A;
+	Geschwindigkeit = (unsigned int)B;
 
 	Mitt_Geschwindigkeit = (Mitt_Geschwindigkeit + Geschwindigkeit) / 2;
 	Max_Geschwindigkeit = max(Geschwindigkeit, Max_Geschwindigkeit);
@@ -87,11 +119,20 @@ SendData Anzeige::BerechneNeueDaten(unsigned int diff_imp, unsigned long Zeitint
 
 	Max_Spannung = max(MessSpannung, Max_Spannung);
 	Min_Spannung = min(MessSpannung, Min_Spannung);
+
 	update = true;
+	alte_Zeit = Zeit;
+
+	SendData SendeDaten;
+	SendeDaten.Nr = Messimpulse;
+	SendeDaten.Po = MessSpannung;
+	SendeDaten.Sp = Geschwindigkeit;
+	return SendeDaten;
 }
 
 void Anzeige::FuelleKurve(byte Power_Data, byte Speed_Data)
 {
+	/*
 	byte PO_V = Power_Data * (32 / 1023);
 	byte SP_V = Speed_Data * (32 / 200);
 	for (byte i = 128; i > 0; i--)
@@ -101,6 +142,7 @@ void Anzeige::FuelleKurve(byte Power_Data, byte Speed_Data)
 	}
 	KurvePower[0] = PO_V;
 	KurveSpeed[0] = SP_V;
+	*/
 }
 
 char *Anzeige::Zeile(char* TA, double N, char* TC)
@@ -132,30 +174,18 @@ char* Anzeige::Zeile(char* TA, unsigned int N, char* TC)
 char* Anzeige::Zeile(char* TA, byte N, char* TC)
 {
 	static char Text[17];
-	char TB[4];
+	char TB[7];
 	sprintf(TB, " %3d", N);
 	Text[0] = 0;
 	strcat(Text, TA);
 	strcat(Text, TB);
 	strcat(Text, TC);
-
-	return Text;
+	if (strlen(TA) == 0)
+		return TB;
+	else
+		return Text;
 }
 
-char* Anzeige::ZeileV(char* TA, byte N, char* TC)
-{
-	static char Text[17];     //  01234
-	char TB[5];               // " 18.0"
-	sprintf(TB, " %3d ", N);
- 	TB[4] = TB[3];
-	TB[3] = '.';
-	Text[0] = 0;
-	strcat(Text, TA);
-	strcat(Text, TB);
-	strcat(Text, TC);
-
-	return Text;
-}
 
 
 void Anzeige::Zeichne_Anzeige()
@@ -189,16 +219,19 @@ void Anzeige::Zeichne_Anzeige()
 			// 5             "- 123 km/h"
 			Display.drawString(0, 5, Zeile(" -    ", Geschwindigkeit, " km/h "));
 
-			// 6              " 20.0 V ");
-			Display.drawString(0, 6, ZeileV(" -   ", MessSpannung, " V"));
+			// 6              " 100 % ");
+			Display.drawString(0, 6, Zeile(" -   ", MessSpannung, " %"));
+			if(ERROR_IMP)
+				Display.drawString(0, 7, Zeile(" !", ER_ImP, " ERR "));
+
 	
 			break;
 		case Messen_Z_SP:
-			// Serial.print(Zeile("", Geschwindigkeit, ""));
-
+			
 			sprintf(Buffer, "%4d", Geschwindigkeit);
 			Display.setFont(FONT_g);
 			Display.drawString(0, 2, Buffer);
+			//Display.drawString(0, 2, Zeileb("", Geschwindigkeit, ""));
 
 			Display.setFont(FONT_k);
 			Display.draw1x2String(0, 0, "4. Geschwind.");
@@ -208,11 +241,11 @@ void Anzeige::Zeichne_Anzeige()
 		case Messen_Z_PO:
 
 			Display.setFont(FONT_g);
-			Display.drawString(0, 2, ZeileV("", MessSpannung, ""));
+			Display.drawString(0, 2, Zeile("", MessSpannung, ""));
 
 			Display.setFont(FONT_k);
 			Display.draw1x2String(0, 0, "4. Spannung  ");
-			Display.drawString(0, 7, "    U in [V]");
+			Display.drawString(0, 7, "  100% [ 17V]");
 			break;
 		case Kurve_SP:
 			Display.drawString(0, 0, "3 Messen KSP ");
