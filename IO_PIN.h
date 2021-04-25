@@ -10,6 +10,8 @@
 #define PIN_FUNK	 7  //  Daten funken
 #define PIN_TASTE_L  A4  // Taste links
 #define PIN_TASTE_R  A5  // Taste rechts
+#define PIN_6        6   // Taste rechts
+#define PIN_5        5   // Taste links
 #define PIN_REED     4  // Start der Messung
 #define PIN_LED		 3  // neue Led Anzeige
 #define PIN_TAKTRAD  2   // Strecke messen mit dem Rad
@@ -19,20 +21,26 @@
 #define PIN_START	 A1  // Starte Messung Reedrelay
 #define PIN_A2		 A2
 #define PIN_A3		 A3
+// Beschleinigungs-Modul
 #define PIN_SDA		 A4  // Data I²C
 #define PIN_SCL		 A5  // Clock I²C
-// Funk-Modul
-#define FUNK_bps	1000
-#define FUNK_nr		4
-// Beschleinigungs-Modul
-#define MPU6050_ADRESS 0x68
-#define MPU6050_DATA_L 14
+// Funk-Modul Serial HF12
+#define FUNK_bps	9600
+#define FUNK_nr		20 // Übertragung der Bytes bei Funk
+
 
 
 #define Taste_Pushed(A) digitalRead(A) == LOW
 #define TRACE(A) Serial.println(A);
 #define TRACE2(A,B) Serial.print(A); Serial.println(B);
 #define TRACE3(A,B,C) Serial.print(A); Serial.print(B);Serial.println(C);
+struct Gyro_Werte
+{
+	float x;
+	float y;
+	float z;
+	float T;
+};
 
 
 struct SendData
@@ -40,25 +48,5 @@ struct SendData
 	unsigned int Nr;
 	byte Po;
 	byte Sp;
-/*
-	SendData(unsigned int N,byte P, byte S)
-	{
-		Nr = N;
-		Po = P;
-		Sp = S;
-	}
-*/
-};
-struct B_Werte
-{
-	int x;
-	int y;
-	int z;
-};
-
-struct Mess_Besch
-{
-	B_Werte Bes;
-	B_Werte Gyo;
-	double  Temp;
+	Gyro_Werte GW;
 };

@@ -23,31 +23,23 @@ Anzeige::~Anzeige()
 {
 }
 
-void Anzeige::Begin()
+void Anzeige::Begin(bool start)
 {
-	Display.begin();
-	Display.setContrast(21);
-	/*
-	Display.setFont(FONT_k);
-	Display.drawString(0, 0,"starte Messwagen!");
-	Display.drawString(0, 2,"   Version 1.0   ");
-	Display.drawString(0, 4,"   is booting    ");
-	/*
-	Display.drawString(0, 6, ".               "); 
-	Display.drawString(0, 6, "..!             "); 
-	Display.drawString(0, 6, "...!            "); 
-	Display.drawString(0, 6, "....!           "); 
-	Display.drawString(0, 6, ".....!          "); 
-	Display.drawString(0, 6, "......!         "); 
-	Display.drawString(0, 6, ".......!        "); 
-	Display.drawString(0, 6, ".........!      "); 
-	Display.drawString(0, 6, "..........!     "); 
-	Display.drawString(0, 6, "...........!    "); 
-	Display.drawString(0, 6, "............!   "); 
-	Display.drawString(0, 6, ".............!  "); 
-	Display.drawString(0, 6, "..............! "); 
-	Display.drawString(0, 6, "...............!"); 
-	*/
+	if (start)
+	{
+		Display.begin();
+		Display.setContrast(21);
+		Display.setFont(FONT_k);
+		Display.drawString(0, 0, "starte Messwagen!");
+		Display.drawString(0, 2, "   Version 1.0   ");
+		Display.drawString(0, 4, "Calc gyro offset!");
+		Display.drawString(0, 6, " So don't move it");
+	}
+	else
+	{
+		Display.drawString(0, 4, "-- Setup Done! --");
+		Display.drawString(0, 6, " Run Measurment  ");
+	}
 }
 
 bool Anzeige::StarteMessung(unsigned long Zeit)

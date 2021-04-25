@@ -15,7 +15,7 @@ class Anzeige
 public:
 	Anzeige();
 	~Anzeige();
-	void Begin();
+	void Begin(bool start);
 	bool StarteMessung(unsigned long Zeit); 
 	void Zeichne_Anzeige();
 	void NextMenue(bool M);

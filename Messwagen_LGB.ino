@@ -12,12 +12,15 @@
 Hardware MessWagen;
 Anzeige Display;
 SendData SendeDaten;
+
 unsigned long Z1;
 //unsigned long mZ1, mZ2;
 byte Messimpulse; // von der Lichtschranke
 
 int D_Spannung;
-
+float Winkel_X; // Kippen des Waggon 
+float Winkel_Y; // Steigung in Fahrtrichtung
+float Winkel_Z; // Drehung
 
 void setup()
 {
@@ -25,16 +28,21 @@ void setup()
 	Serial.flush();
 	Serial.println(" Starte Messwagen !");
 	MessWagen.Begin();
-	Display.Begin();
+	Display.Begin(true);
+	Wire.begin();
 
+	//Gyro_Sensor.begin();
+	//delay(1000);
+	//Gyro_Sensor.calcGyroOffsets();
 	Messimpulse = 0 ;
 	attachInterrupt(digitalPinToInterrupt(PIN_TAKTRAD), behandle_interupt, RISING);
+	Display.Begin(false);
 }
 
 
 void loop()
 {
-
+	/*
 	Display.NextMenue(Taste_Pushed(PIN_TASTE_R));
 	Display.Zeichne_Anzeige();
 	if (Messimpulse > 0)
@@ -53,6 +61,7 @@ void loop()
 		//mZ2 = millis();
 		//Serial.println(mZ2 - mZ1);	
 	}
+	*/
 }
 
 
